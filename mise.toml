@@ -1,0 +1,9 @@
+[tools]
+cilium-cli = "latest"
+kind = "latest"
+cilium-hubble = "latest"
+kyverno = "latest"
+
+[tasks."kind:start"]
+description = "Create the k8s-defense-lab kind cluster using kind/kind.config"
+run = "kind create cluster --config kind/kind.config"
