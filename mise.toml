@@ -1,9 +1,61 @@
 [tools]
-cilium-cli = "latest"
 kind = "latest"
+helm = "latest"
 cilium-hubble = "latest"
 kyverno = "latest"
+
+[env]
+CILIUM_VERSION = "1.19.1"
+KIND_CLUSTER_NAME = "k8s-defense-lab"
 
 [tasks."kind:start"]
 description = "Create the k8s-defense-lab kind cluster using kind/kind.config"
 run = "kind create cluster --config kind/kind.config"
+
+[tasks."kind:delete"]
+description = "Delete the k8s-defense-lab kind cluster"
+run = "kind delete cluster --name $KIND_CLUSTER_NAME"
+
+[tasks."helm:repo:add"]
+description = "Add the Cilium Helm repo"
+run = [
+  "helm repo add cilium https://helm.cilium.io/",
+  "helm repo update"
+]
+
+[tasks."cilium:preload"]
+description = "Pull Cilium images locally and load them into the kind cluster nodes"
+run = [
+  "docker pull quay.io/cilium/cilium:v$CILIUM_VERSION",
+  "docker pull quay.io/cilium/operator-generic:v$CILIUM_VERSION",
+  "docker pull quay.io/cilium/hubble-relay:v$CILIUM_VERSION",
+  "kind load docker-image quay.io/cilium/cilium:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image quay.io/cilium/operator-generic:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image quay.io/cilium/hubble-relay:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
+]
+
+[tasks."cilium:uninstall"]
+description = "Uninstall Cilium from the cluster using Helm"
+run = "helm uninstall cilium --namespace kube-system"
+
+[tasks."cilium:install"]
+description = "Install Cilium in kube-proxy-free mode using Helm"
+depends = ["helm:repo:add", "cilium:preload"]
+run = """
+APISERVER_IP=$(kubectl get endpoints kubernetes -ojsonpath='{.subsets[0].addresses[0].ip}')
+helm install cilium cilium/cilium \
+  --namespace kube-system \
+  --version $CILIUM_VERSION \
+  --values cilium/values.yaml \
+  --set k8sServiceHost=$APISERVER_IP \
+  --set k8sServicePort=6443
+"""
+run_windows = """
+$APISERVER_IP = kubectl get endpoints kubernetes -ojsonpath='{.subsets[0].addresses[0].ip}'
+helm install cilium cilium/cilium `
+  --namespace kube-system `
+  --version $env:CILIUM_VERSION `
+  --values cilium/values.yaml `
+  --set k8sServiceHost=$APISERVER_IP `
+  --set k8sServicePort=6443
+"""
