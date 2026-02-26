@@ -10,7 +10,8 @@ This mitigation blocks the two fields used by the escape:
 ## Apply policy
 
 ```sh
-kubectl apply -f kyverno-policy.yaml
+
+kubectl apply -f scenarios/00-container-escape/mitigation/kyverno-policy.yaml
 ```
 
 ---
@@ -18,6 +19,9 @@ kubectl apply -f kyverno-policy.yaml
 ## Verify validation fails
 
 ```sh
+kubectl delete pod web -n frontend --ignore-not-found
+kubectl apply -k scenarios/00-container-escape/attack/
+kubectl wait pod/web -n frontend --for=condition=Ready --timeout=60s
 kubectl apply -k scenarios/00-container-escape/attack/
 ```
 
@@ -36,4 +40,12 @@ policy Pod/frontend/web for resource violations:
 
 ```sh
 kubectl delete -f kyverno-policy.yaml
+```
+
+---
+
+## Reset apps
+
+```sh
+mise apps:restart
 ```

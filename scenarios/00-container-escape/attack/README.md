@@ -62,9 +62,13 @@ find /var/lib/kubelet/pods -path '*/volumes/kubernetes.io~projected/*/token' 2>/
   [ -n "$pod" ] || pod=$(printf '%s' "$payload" | sed -n 's/.*"kubernetes.io\/pod\/name":"\([^"]*\)".*/\1/p' | head -n 1)
   [ -n "$pod" ] || pod="<unknown>"
 
-  printf "%-16s %-28s %-32s %s\n" "$ns" "$sa" "$pod" "$t"
+  printf "%-16s %-28s %-32s %s\n" "$ns" "$sa" "$pod" "${t%%/volumes/*}"
 done | sort -u
 ```
+
+## Mitigation
+
+Now, run the mitigation instruction.
 
 ---
 
