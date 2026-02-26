@@ -37,7 +37,7 @@ run = [
   "docker pull quay.io/cilium/hubble-relay:v$CILIUM_VERSION",
   "docker pull quay.io/cilium/hubble-ui:v$HUBBLE_UI_VERSION",
   "docker pull quay.io/cilium/hubble-ui-backend:v$HUBBLE_UI_VERSION",
-  "docker pull quay.io/cilium/cilium-envoy:$CILIUM_ENVOY_VERSION",
+  "docker pull quay.io/cilium/cilium-envoy:v$CILIUM_ENVOY_VERSION",
 ]
 
 [tasks."cilium:load"]
@@ -49,7 +49,7 @@ run = [
   "kind load docker-image quay.io/cilium/hubble-relay:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
   "kind load docker-image quay.io/cilium/hubble-ui:v$HUBBLE_UI_VERSION --name $KIND_CLUSTER_NAME",
   "kind load docker-image quay.io/cilium/hubble-ui-backend:v$HUBBLE_UI_VERSION --name $KIND_CLUSTER_NAME",
-  "kind load docker-image quay.io/cilium/cilium-envoy:$CILIUM_ENVOY_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image quay.io/cilium/cilium-envoy:v$CILIUM_ENVOY_VERSION --name $KIND_CLUSTER_NAME",
 ]
 
 [tasks."kyverno:pull"]
