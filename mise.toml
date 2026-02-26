@@ -147,14 +147,14 @@ helm install cilium cilium/cilium `
 description = "Create frontend and backend namespaces with netshoot pods as the attack platform for the demo"
 depends = ["apps:load"]
 run = """
-kubectl apply -f apps/
+kubectl apply -k apps/
 kubectl wait pod/web -n frontend --for=condition=Ready --timeout=60s
 kubectl wait pod/api -n backend --for=condition=Ready --timeout=60s
 """
 
 [tasks."apps:stop"]
 description = "Delete the frontend and backend demo namespaces and all their resources"
-run = "kubectl delete -f apps/ --ignore-not-found"
+run = "kubectl delete -k apps/ --ignore-not-found"
 
 [tasks."apps:restart"]
 description = "Tear down and recreate the demo environment"
