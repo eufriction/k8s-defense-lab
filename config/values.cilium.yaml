@@ -22,3 +22,6 @@ hubble:
     enabled: true
   ui:
     enabled: true
+
+# Enabel policy enforcement
+policyAuditMode: false
