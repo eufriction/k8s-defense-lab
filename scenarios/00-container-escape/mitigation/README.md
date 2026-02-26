@@ -18,7 +18,7 @@ kubectl apply -f kyverno-policy.yaml
 ## Verify validation fails
 
 ```sh
-kubectl apply -k scenarios/06-container-escape/attack/
+kubectl apply -k scenarios/00-container-escape/attack/
 ```
 
 Kyverno should block the patched `web` pod with an admission denial:

@@ -13,7 +13,7 @@
 ```sh
 mise run apps:start
 kubectl delete pod web -n frontend --ignore-not-found
-kubectl apply -k scenarios/06-container-escape/attack/
+kubectl apply -k scenarios/00-container-escape/attack/
 kubectl wait pod/web -n frontend --for=condition=Ready --timeout=60s
 kubectl exec -it web -n frontend -- sh
 ```
