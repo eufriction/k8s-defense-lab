@@ -1,11 +1,14 @@
 [tools]
 kind = "latest"
 helm = "latest"
+cilium-cli = "latest"
 cilium-hubble = "latest"
 kyverno = "latest"
 
 [env]
 CILIUM_VERSION = "1.19.1"
+HUBBLE_UI_VERSION = "0.13.3"
+CILIUM_ENVOY_VERSION = "1.35.9-1770979049-232ed4a26881e4ab4f766f251f258ed424fff663"
 KYVERNO_CHART_VERSION = "3.7.0"
 KYVERNO_APP_VERSION = "1.17.0"
 KIND_CLUSTER_NAME = "k8s-defense-lab"
@@ -26,24 +29,42 @@ run = [
   "helm repo update"
 ]
 
-[tasks."cilium:preload"]
-description = "Pull Cilium images locally and load them into the kind cluster nodes"
+[tasks."cilium:pull"]
+description = "Pull Cilium images from the registry to the local Docker daemon"
 run = [
   "docker pull quay.io/cilium/cilium:v$CILIUM_VERSION",
   "docker pull quay.io/cilium/operator-generic:v$CILIUM_VERSION",
   "docker pull quay.io/cilium/hubble-relay:v$CILIUM_VERSION",
+  "docker pull quay.io/cilium/hubble-ui:v$HUBBLE_UI_VERSION",
+  "docker pull quay.io/cilium/hubble-ui-backend:v$HUBBLE_UI_VERSION",
+  "docker pull quay.io/cilium/cilium-envoy:$CILIUM_ENVOY_VERSION",
+]
+
+[tasks."cilium:load"]
+description = "Load Cilium images from the local Docker daemon into the kind cluster nodes"
+depends = ["cilium:pull"]
+run = [
   "kind load docker-image quay.io/cilium/cilium:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
   "kind load docker-image quay.io/cilium/operator-generic:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
   "kind load docker-image quay.io/cilium/hubble-relay:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image quay.io/cilium/hubble-ui:v$HUBBLE_UI_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image quay.io/cilium/hubble-ui-backend:v$HUBBLE_UI_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image quay.io/cilium/cilium-envoy:$CILIUM_ENVOY_VERSION --name $KIND_CLUSTER_NAME",
 ]
 
-[tasks."kyverno:preload"]
-description = "Pull Kyverno images locally and load them into the kind cluster nodes"
+[tasks."kyverno:pull"]
+description = "Pull Kyverno images from the registry to the local Docker daemon"
 run = [
   "docker pull ghcr.io/kyverno/kyverno:v$KYVERNO_APP_VERSION",
   "docker pull ghcr.io/kyverno/background-controller:v$KYVERNO_APP_VERSION",
   "docker pull ghcr.io/kyverno/cleanup-controller:v$KYVERNO_APP_VERSION",
   "docker pull ghcr.io/kyverno/reports-controller:v$KYVERNO_APP_VERSION",
+]
+
+[tasks."kyverno:load"]
+description = "Load Kyverno images from the local Docker daemon into the kind cluster nodes"
+depends = ["kyverno:pull"]
+run = [
   "kind load docker-image ghcr.io/kyverno/kyverno:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
   "kind load docker-image ghcr.io/kyverno/background-controller:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
   "kind load docker-image ghcr.io/kyverno/cleanup-controller:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
@@ -60,7 +81,7 @@ run = "helm uninstall kyverno --namespace kyverno"
 
 [tasks."cilium:install"]
 description = "Install Cilium in kube-proxy-free mode using Helm"
-depends = ["helm:repo:add", "cilium:preload"]
+depends = ["helm:repo:add", "cilium:load"]
 run = """
 APISERVER_IP=$(kubectl get endpoints kubernetes -ojsonpath='{.subsets[0].addresses[0].ip}')
 helm install cilium cilium/cilium \
@@ -80,9 +101,15 @@ helm install cilium cilium/cilium `
   --set k8sServicePort=6443
 """
 
+[tasks."cluster:up"]
+description = "Bootstrap the full cluster: kind + Cilium + Kyverno in order"
+depends = ["kind:start"]
+run = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
+run_windows = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
+
 [tasks."kyverno:install"]
 description = "Install Kyverno using Helm"
-depends = ["helm:repo:add", "kyverno:preload"]
+depends = ["helm:repo:add", "kyverno:load"]
 run = """
 helm install kyverno kyverno/kyverno \
   --namespace kyverno \
