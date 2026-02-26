@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/part-of: demo
 spec:
   containers:
-  - name: httpbin
-    image: mccutchen/go-httpbin:2.20.0
-    imagePullPolicy: IfNotPresent
-    ports:
-    - containerPort: 80
+    - name: httpbin
+      image: mccutchen/go-httpbin:2.20.0
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 80

@@ -8,7 +8,6 @@ kubeProxyReplacement: true
 # k8sServiceHost and k8sServicePort are resolved dynamically at install time
 # via docker inspect in the cilium:install mise task
 
-
 # Use VXLAN tunnel mode (required for kind)
 tunnelProtocol: vxlan
 
