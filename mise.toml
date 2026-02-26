@@ -6,6 +6,8 @@ kyverno = "latest"
 
 [env]
 CILIUM_VERSION = "1.19.1"
+KYVERNO_CHART_VERSION = "3.7.0"
+KYVERNO_APP_VERSION = "1.17.0"
 KIND_CLUSTER_NAME = "k8s-defense-lab"
 
 [tasks."kind:start"]
@@ -17,9 +19,10 @@ description = "Delete the k8s-defense-lab kind cluster"
 run = "kind delete cluster --name $KIND_CLUSTER_NAME"
 
 [tasks."helm:repo:add"]
-description = "Add the Cilium Helm repo"
+description = "Add the Cilium and Kyverno Helm repos"
 run = [
   "helm repo add cilium https://helm.cilium.io/",
+  "helm repo add kyverno https://kyverno.github.io/kyverno/",
   "helm repo update"
 ]
 
@@ -34,9 +37,26 @@ run = [
   "kind load docker-image quay.io/cilium/hubble-relay:v$CILIUM_VERSION --name $KIND_CLUSTER_NAME",
 ]
 
+[tasks."kyverno:preload"]
+description = "Pull Kyverno images locally and load them into the kind cluster nodes"
+run = [
+  "docker pull ghcr.io/kyverno/kyverno:v$KYVERNO_APP_VERSION",
+  "docker pull ghcr.io/kyverno/background-controller:v$KYVERNO_APP_VERSION",
+  "docker pull ghcr.io/kyverno/cleanup-controller:v$KYVERNO_APP_VERSION",
+  "docker pull ghcr.io/kyverno/reports-controller:v$KYVERNO_APP_VERSION",
+  "kind load docker-image ghcr.io/kyverno/kyverno:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image ghcr.io/kyverno/background-controller:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image ghcr.io/kyverno/cleanup-controller:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
+  "kind load docker-image ghcr.io/kyverno/reports-controller:v$KYVERNO_APP_VERSION --name $KIND_CLUSTER_NAME",
+]
+
 [tasks."cilium:uninstall"]
 description = "Uninstall Cilium from the cluster using Helm"
 run = "helm uninstall cilium --namespace kube-system"
+
+[tasks."kyverno:uninstall"]
+description = "Uninstall Kyverno from the cluster using Helm"
+run = "helm uninstall kyverno --namespace kyverno"
 
 [tasks."cilium:install"]
 description = "Install Cilium in kube-proxy-free mode using Helm"
@@ -58,4 +78,22 @@ helm install cilium cilium/cilium `
   --values cilium/values.yaml `
   --set k8sServiceHost=$APISERVER_IP `
   --set k8sServicePort=6443
+"""
+
+[tasks."kyverno:install"]
+description = "Install Kyverno using Helm"
+depends = ["helm:repo:add", "kyverno:preload"]
+run = """
+helm install kyverno kyverno/kyverno \
+  --namespace kyverno \
+  --create-namespace \
+  --version $KYVERNO_CHART_VERSION \
+  --values kyverno/values.yaml
+"""
+run_windows = """
+helm install kyverno kyverno/kyverno `
+  --namespace kyverno `
+  --create-namespace `
+  --version $env:KYVERNO_CHART_VERSION `
+  --values kyverno/values.yaml
 """
