@@ -14,7 +14,6 @@
 mise run apps:start
 kubectl delete -f scenarios/01-lateral-movement/mitigation/backend-ingress-policy.yaml --ignore-not-found
 kubectl delete -f scenarios/01-lateral-movement/mitigation/frontend-egress-policy.yaml --ignore-not-found
-kubectl exec -it web -n frontend -- zsh
 ```
 
 All remaining commands run inside this shell.
@@ -25,16 +24,20 @@ All remaining commands run inside this shell.
 
 ```sh
 cilium hubble port-forward &
+cilium hubble ui &
 hubble observe --from-pod frontend/web --follow
 ```
 
-While you run the `curl` command, Hubble should show `FORWARDED` flows from `frontend/web` to `backend/api`.
+These command opens a browser with the Hubble UI and also start to observe the network flows.
 
 ---
 
 ## Reach the backend pod from the frontend pod
 
+While you run the `curl` command, Hubble should show `FORWARDED` flows from `frontend/web` to `backend/api`.
+
 ```sh
+kubectl exec -it web -n frontend -- zsh
 curl -sS http://api.backend.svc.cluster.local/get
 ```
 
