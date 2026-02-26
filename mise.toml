@@ -1,9 +1,21 @@
 [tools]
+hk = "latest"
+pkl = "latest"
 kind = "latest"
 helm = "latest"
 cilium-cli = "latest"
 cilium-hubble = "latest"
 kyverno = "latest"
+node = "latest"
+prettier = "latest"
+vale = "latest"
+
+[hooks]
+enter = "hk install"
+
+[tasks.lint]
+description = "Run all pre-commit checks against all files"
+run = "hk run pre-commit --all"
 
 [env]
 NETSHOOT_VERSION = "v0.15"

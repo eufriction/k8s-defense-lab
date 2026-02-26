@@ -1,6 +1,6 @@
-# k8s-defense-lab
+# Introduction
 
-This repository demonstrates how **Kyverno** and **Cilium Network Policies** protect a Kubernetes cluster when an application is compromised. It provides a set of realistic attack scenarios, each paired with a mitigation, so you can observe the difference in behaviour before and after controls are applied.
+This repository demonstrates how **Kyverno** and **Cilium Network Policies** protect a Kubernetes cluster when an attacker compromises an application. It provides a set of realistic attack scenarios, each paired with a mitigation, so you can observe the difference in behaviour before and after applying the controls.
 
 ---
 
@@ -13,7 +13,7 @@ This repository demonstrates how **Kyverno** and **Cilium Network Policies** pro
 
 ---
 
-## Quick Start
+## Quick start
 
 **1. Start the cluster**
 
@@ -77,7 +77,7 @@ hubble observe --namespace backend --follow
 
 ---
 
-## Teardown
+## Clean up
 
 ```sh
 mise run apps:stop      # remove the demo workloads
