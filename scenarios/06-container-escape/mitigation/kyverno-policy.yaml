@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/kyverno.io/clusterpolicy_v1.json
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-privileged-containers
+  annotations:
+    policies.kyverno.io/title: Restrict Privileged Containers
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: critical
+    policies.kyverno.io/description: >-
+      Privileged mode and hostPID grant a container direct access to the host
+      kernel and filesystem. Combined, they allow an attacker to escape the
+      container boundary entirely via nsenter. This policy denies any Pod that
+      sets hostPID, hostIPC, hostNetwork, or marks any container as privileged.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: deny-privileged-containers
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - frontend
+                - backend
+      validate:
+        message: "Privileged containers and hostPID, hostIPC, hostNetwork are not allowed."
+        pattern:
+          spec:
+            =(hostPID): false
+            =(hostIPC): false
+            =(hostNetwork): false
+            containers:
+              - =(securityContext):
+                  =(privileged): false
+            =(initContainers):
+              - =(securityContext):
+                  =(privileged): false
+            =(ephemeralContainers):
+              - =(securityContext):
+                  =(privileged): false
