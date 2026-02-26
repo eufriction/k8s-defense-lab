@@ -19,9 +19,14 @@ KIND_CLUSTER_NAME = "k8s-defense-lab"
 description = "Create the k8s-defense-lab kind cluster using kind/kind.config"
 run = "kind create cluster --config kind/kind.config"
 
-[tasks."kind:delete"]
+[tasks."kind:stop"]
 description = "Delete the k8s-defense-lab kind cluster"
 run = "kind delete cluster --name $KIND_CLUSTER_NAME"
+
+[tasks."kind:restart"]
+description = "Delete and recreate the k8s-defense-lab kind cluster"
+depends = ["kind:stop"]
+run = "mise run kind:start"
 
 [tasks."helm:repo:add"]
 description = "Add the Cilium and Kyverno Helm repos"
@@ -126,32 +131,38 @@ helm install cilium cilium/cilium `
   --set k8sServicePort=6443
 """
 
-[tasks."demo:setup"]
+[tasks."demo:start"]
 description = "Create frontend and backend namespaces with netshoot pods as the attack platform for the demo"
 depends = ["demo:load"]
 run = """
 kubectl apply -f demo/
 kubectl wait pod/web -n frontend --for=condition=Ready --timeout=60s
 kubectl wait pod/api -n backend --for=condition=Ready --timeout=60s
-echo ""
-echo "Attack platform ready. Exec into the compromised frontend pod with:"
-echo "  kubectl exec -it web -n frontend -- zsh"
-echo ""
-echo "From there, try reaching the backend:"
-echo "  curl http://api.backend.svc.cluster.local/get"
 """
 
-[tasks."demo:teardown"]
+[tasks."demo:stop"]
 description = "Delete the frontend and backend demo namespaces and all their resources"
 run = "kubectl delete -f demo/ --ignore-not-found"
 
+[tasks."demo:restart"]
+description = "Tear down and recreate the demo environment"
+depends = ["demo:stop"]
+run = "mise run demo:start"
 
-
-[tasks."cluster:up"]
+[tasks."cluster:start"]
 description = "Bootstrap the full cluster: kind + Cilium + Kyverno in order"
 depends = ["kind:start"]
 run = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
 run_windows = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
+
+[tasks."cluster:stop"]
+description = "Delete the full cluster"
+run = "mise run kind:stop"
+
+[tasks."cluster:restart"]
+description = "Delete and fully rebuild the cluster"
+depends = ["cluster:stop"]
+run = "mise run cluster:start"
 
 [tasks."kyverno:install"]
 description = "Install Kyverno using Helm"
