@@ -16,8 +16,8 @@ KYVERNO_APP_VERSION = "1.17.0"
 KIND_CLUSTER_NAME = "k8s-defense-lab"
 
 [tasks."kind:start"]
-description = "Create the k8s-defense-lab kind cluster using kind/kind.config"
-run = "kind create cluster --config kind/kind.config"
+description = "Create the k8s-defense-lab kind cluster using config/kind.config"
+run = "kind create cluster --config config/kind.config"
 
 [tasks."kind:stop"]
 description = "Delete the k8s-defense-lab kind cluster"
@@ -113,7 +113,7 @@ fi
 helm install cilium cilium/cilium \
   --namespace kube-system \
   --version $CILIUM_VERSION \
-  --values cilium/values.yaml \
+  --values config/values.cilium.yaml \
   --set k8sServiceHost=$APISERVER_IP \
   --set k8sServicePort=6443
 """
@@ -126,7 +126,7 @@ if (-not $APISERVER_IP) {
 helm install cilium cilium/cilium `
   --namespace kube-system `
   --version $env:CILIUM_VERSION `
-  --values cilium/values.yaml `
+  --values config/values.cilium.yaml `
   --set k8sServiceHost=$APISERVER_IP `
   --set k8sServicePort=6443
 """
@@ -172,12 +172,12 @@ helm install kyverno kyverno/kyverno \
   --namespace kyverno \
   --create-namespace \
   --version $KYVERNO_CHART_VERSION \
-  --values kyverno/values.yaml
+  --values config/values.kyverno.yaml
 """
 run_windows = """
 helm install kyverno kyverno/kyverno `
   --namespace kyverno `
   --create-namespace `
   --version $env:KYVERNO_CHART_VERSION `
-  --values kyverno/values.yaml
+  --values config/values.kyverno.yaml
 """
