@@ -146,11 +146,7 @@ helm install cilium cilium/cilium `
 [tasks."apps:start"]
 description = "Create frontend and backend namespaces with netshoot pods as the attack platform for the demo"
 depends = ["apps:load"]
-run = """
-kubectl apply -k apps/
-kubectl wait pod/web -n frontend --for=condition=Ready --timeout=60s
-kubectl wait pod/api -n backend --for=condition=Ready --timeout=60s
-"""
+run = "kubectl apply -k apps/"
 
 [tasks."apps:stop"]
 description = "Delete the frontend and backend demo namespaces and all their resources"
@@ -161,14 +157,23 @@ description = "Tear down and recreate the demo environment"
 depends = ["apps:stop"]
 run = "mise run apps:start"
 
+[tasks."apps:verify"]
+description = "Verify the demo apps are healthy"
+depends_post = ["apps:start"]
+run = [
+  "kubectl wait pod/web -n frontend --for=condition=Ready --timeout=60s",
+  "kubectl wait pod/api -n backend --for=condition=Ready --timeout=60s"
+]
+
 [tasks."cluster:start"]
 description = "Bootstrap the full cluster: kind + Cilium + Kyverno in order"
 depends = ["kind:start"]
-run = "mise run cilium:install && cilium status --wait && mise run kyverno:install && mise run cluster:verify"
-run_windows = "mise run cilium:install && cilium status --wait && mise run kyverno:install && mise run cluster:verify"
+run = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
+run_windows = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
 
 [tasks."cluster:verify"]
 description = "Verify the cluster is healthy: Cilium status and Kyverno pods ready"
+depends_post = ["cluster:start"]
 run = [
   "cilium status --wait",
   "kubectl wait pods --all -n kyverno --for=condition=Ready --timeout=120s"
