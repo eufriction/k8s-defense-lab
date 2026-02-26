@@ -33,7 +33,7 @@ kubectl get pods -n kyverno
 **3. Start the demo environment**
 
 ```sh
-mise run demo:start
+mise run apps:start
 ```
 
 This deploys a two-tier application across two namespaces:
@@ -80,6 +80,6 @@ hubble observe --namespace backend --follow
 ## Teardown
 
 ```sh
-mise run demo:stop      # remove the demo workloads
+mise run apps:stop      # remove the demo workloads
 mise run cluster:stop   # delete the cluster
 ```
