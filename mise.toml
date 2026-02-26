@@ -164,8 +164,15 @@ run = "mise run apps:start"
 [tasks."cluster:start"]
 description = "Bootstrap the full cluster: kind + Cilium + Kyverno in order"
 depends = ["kind:start"]
-run = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
-run_windows = "mise run cilium:install && cilium status --wait && mise run kyverno:install"
+run = "mise run cilium:install && cilium status --wait && mise run kyverno:install && mise run cluster:verify"
+run_windows = "mise run cilium:install && cilium status --wait && mise run kyverno:install && mise run cluster:verify"
+
+[tasks."cluster:verify"]
+description = "Verify the cluster is healthy: Cilium status and Kyverno pods ready"
+run = [
+  "cilium status --wait",
+  "kubectl wait pods --all -n kyverno --for=condition=Ready --timeout=120s"
+]
 
 [tasks."cluster:stop"]
 description = "Delete the full cluster"

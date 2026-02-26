@@ -26,8 +26,7 @@ This creates a `kind` cluster, installs Cilium in kube-proxy-free mode with Hubb
 **2. Verify the cluster is healthy**
 
 ```sh
-cilium status --wait
-kubectl get pods -n kyverno
+mise run cluster:verify
 ```
 
 **3. Start the demo environment**
