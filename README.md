@@ -15,7 +15,34 @@ This repository demonstrates how **Kyverno** and **Cilium Network Policies** pro
 
 ## Quick start
 
-**1. Start the cluster**
+### Preparation (one-time)
+
+#### Activate mise in your shell
+
+Make sure `mise` is activated in your shell so the `mise run ...` tasks can load the right tools. Don’t skip this. Follow the official `mise activate` instructions for your shell:
+
+- [mise activate documentation](https://mise.jdx.dev/cli/activate.html)
+
+After adding the activation line, restart your shell or open a new terminal.
+
+#### Set a GitHub token to avoid rate limits (recommended)
+
+When `mise` installs tools hosted on GitHub, unauthenticated requests can hit GitHub API rate limits. Create a personal access token (no scopes needed for public tools) and set it for this project with `mise set --prompt`. See the GitHub token creation guide or go directly to the token creation page:
+
+- https://docs.github.com/articles/creating-an-oauth-token-for-command-line-use
+- https://github.com/settings/tokens/new
+
+Set the token interactively:
+
+```sh
+mise set --prompt GITHUB_TOKEN
+```
+
+Avoid setting the token using `export GITHUB_TOKEN=token` or `mise set GITHUB_TOKEN` as that stores the token the history of your shell.
+
+### Run the demo
+
+#### Start the cluster
 
 ```sh
 mise run cluster:start
@@ -23,13 +50,13 @@ mise run cluster:start
 
 This creates a `kind` cluster, installs Cilium in kube-proxy-free mode with Hubble observability, and installs Kyverno with Pod Security restrictions enabled.
 
-**2. Verify the cluster is healthy**
+#### Verify the cluster is healthy
 
 ```sh
 mise run cluster:verify
 ```
 
-**3. Start the demo environment**
+#### Start the demo environment
 
 ```sh
 mise run apps:start
@@ -42,7 +69,7 @@ This deploys a two-tier application across two namespaces:
 | `web` | `frontend` | Simulates a compromised app   |
 | `api` | `backend`  | Simulates a sensitive backend |
 
-**4. Exec into the compromised pod**
+#### Exec into the compromised pod
 
 ```sh
 kubectl exec -it web -n frontend -- zsh
