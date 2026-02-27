@@ -103,6 +103,22 @@ hubble observe --namespace backend --follow
 
 ---
 
+### Optional: k9s (cluster TUI)
+
+`k9s` is a terminal UI for browsing and managing Kubernetes resources. Start it with:
+
+```sh
+k9s
+```
+
+Basic navigation:
+
+- Use `:` to open the command bar, then type a resource (for example, `pods`, `ns`, `deploy`) and press Enter.
+- Use `j/k` (or arrow keys) to move, `Enter` to drill in, and `Esc` to go back.
+- Press `/` to filter the current list.
+
+---
+
 ## Clean up
 
 ```sh

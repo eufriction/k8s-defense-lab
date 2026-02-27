@@ -1,6 +1,7 @@
 [tools]
 hk = "latest"
 pkl = "latest"
+k9s = "latest"
 kind = "latest"
 helm = "latest"
 cilium-cli = "latest"
